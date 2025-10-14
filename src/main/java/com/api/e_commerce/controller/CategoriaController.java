@@ -18,8 +18,8 @@ public class CategoriaController {
         return categoriaService.getAllCategoria();
     }
 
-    @GetMapping
-    public Categoria getCategoriaById(@RequestParam Long id){
+    @GetMapping(path="/{id}")
+    public Categoria getCategoriaById(@PathVariable("id") Long id){
         return categoriaService.getCategoriaById(id);
     }
 
