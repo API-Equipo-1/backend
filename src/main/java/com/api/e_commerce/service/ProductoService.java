@@ -2,15 +2,15 @@ package com.api.e_commerce.service;
 
 import java.util.List;
 
+import com.api.e_commerce.dto.ProductoDTO;
+import com.api.e_commerce.mapper.ProductoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.api.e_commerce.model.Producto;
 import com.api.e_commerce.repository.ProductoRepository;
-import com.api.e_commerce.dto.ProductoDTO;
 import com.api.e_commerce.dto.ProductoUpdateDTO;
-import com.api.e_commerce.exception.ProductoNotFoundException;
 
 @Service
 @Transactional
@@ -19,53 +19,44 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    public List<Producto> getAllProductos() {
-        return productoRepository.findAll();
+    private final ProductoMapper productoMapper;
+
+    public ProductoService(ProductoMapper productoMapper) {
+        this.productoMapper = productoMapper;
     }
 
-    public Producto getProductoById(Long id) {
-        // return productoRepository.findById(id).orElse(null);
-
-        if (id == 0) {
-            throw new IllegalArgumentException("El id es del admin");
-        }
-
-        return this.productoRepository.findById(id)
-                .orElseThrow(() -> new ProductoNotFoundException(id));
-
+    public List<ProductoDTO> getAllProductos() {
+        List<Producto> productos = productoRepository.findAll();
+        return productoMapper.toDTOList(productos);
     }
 
-    public Producto saveProducto(Producto producto) {
-        return productoRepository.save(producto);
+    public ProductoDTO getProductoById(Long id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        return productoMapper.toDTO(producto);
     }
 
-    public Producto createProducto(ProductoDTO productoDTO) {
-        Producto producto = new Producto();
-        producto.setNombre(productoDTO.getNombre());
-        producto.setDescripcion(productoDTO.getDescripcion());
-        producto.setPrecio(productoDTO.getPrecio());
-        producto.setStock(productoDTO.getStock());
-        producto.setCategorias(productoDTO.getCategorias());
-        
-        return productoRepository.save(producto);
+    public ProductoDTO addProducto(ProductoDTO productoDTO){
+        Producto producto = productoMapper.toEntity(productoDTO);
+        Producto savedProduct = productoRepository.save(producto);
+        return productoMapper.toDTO(savedProduct);
     }
 
     public void deleteProducto(Long id) {
-        productoRepository.deleteById(id);
-    }    
-
-    public Producto updateProducto(Long id, ProductoUpdateDTO productoDTO) {
-        
-
-        return productoRepository.findById(id)
-            .map(producto -> {
-                producto.setPrecio(productoDTO.getPrecio());
-                producto.setStock(productoDTO.getStock());
-                return productoRepository.save(producto);
-            })
-            .orElse(null);
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
+        productoRepository.delete(producto);
     }
 
-    
+    public ProductoUpdateDTO updateProducto(Long id, ProductoUpdateDTO updateDTO) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
 
+        if (updateDTO.getNombre() != null) producto.setNombre(updateDTO.getNombre());
+        if (updateDTO.getPrecio() != null) producto.setPrecio(updateDTO.getPrecio());
+        if (updateDTO.getStock() != null) producto.setStock(updateDTO.getStock());
+
+        Producto savedProduct = productoRepository.save(producto);
+        return productoMapper.toDto(savedProduct);
+    }
 }
