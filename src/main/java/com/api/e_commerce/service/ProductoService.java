@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.api.e_commerce.model.Producto;
 import com.api.e_commerce.repository.ProductoRepository;
+import com.api.e_commerce.dto.ProductoDTO;
 import com.api.e_commerce.dto.ProductoUpdateDTO;
 import com.api.e_commerce.exception.ProductoNotFoundException;
 
@@ -35,6 +36,17 @@ public class ProductoService {
     }
 
     public Producto saveProducto(Producto producto) {
+        return productoRepository.save(producto);
+    }
+
+    public Producto createProducto(ProductoDTO productoDTO) {
+        Producto producto = new Producto();
+        producto.setNombre(productoDTO.getNombre());
+        producto.setDescripcion(productoDTO.getDescripcion());
+        producto.setPrecio(productoDTO.getPrecio());
+        producto.setStock(productoDTO.getStock());
+        producto.setCategorias(productoDTO.getCategorias());
+        
         return productoRepository.save(producto);
     }
 
