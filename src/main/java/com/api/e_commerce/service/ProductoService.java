@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.api.e_commerce.model.Producto;
 import com.api.e_commerce.repository.ProductoRepository;
 import com.api.e_commerce.dto.ProductoUpdateDTO;
-import com.api.e_commerce.exception.ProductoNotFoundException;
 
 @Service
 @Transactional
