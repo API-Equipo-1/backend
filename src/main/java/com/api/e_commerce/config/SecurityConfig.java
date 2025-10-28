@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,8 +13,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.api.e_commerce.repository.UsuarioRepository;
+import com.api.e_commerce.security.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,6 +30,7 @@ public class SecurityConfig {
 
     // Inyección del repositorio de usuarios
     private final UsuarioRepository usuarioRepository;
+    private final JwtFilter jwtFilter;
 
     // Cargar los datos del usuario desde tu sistema a través de UsuarioRepository
     @Bean
@@ -108,9 +112,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/pedidos/**").authenticated()
 
                         // Cualquier otra ruta requiere autenticación
-                        // con esta linea abarca requiere que todos los endpoints esten autenticados
-                        // no seía necesario post, put, delete /api/productos , api/pedidos
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"status\":401,\"error\":\"No autorizado\",\"message\":\"Se requiere autenticación para acceder a este recurso\",\"timestamp\":" + System.currentTimeMillis() + "}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json");
+                            response.getWriter().write("{\"status\":403,\"error\":\"Acceso denegado\",\"message\":\"Se requiere un token JWT válido para acceder a este recurso\",\"timestamp\":" + System.currentTimeMillis() + "}");
+                        }))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
