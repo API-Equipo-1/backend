@@ -14,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 import com.api.e_commerce.repository.UsuarioRepository;
 import com.api.e_commerce.security.JwtFilter;
@@ -81,6 +86,35 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // Configura CORS (Cross-Origin Resource Sharing) para permitir peticiones desde otros dominios
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Permite solicitudes desde estos orígenes (frontend)
+        // En producción, reemplazar "*" con la URL específica del frontend
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4200", "http://localhost:5173"));
+        
+        // Permite todos los métodos HTTP
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Permite todos los headers
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Permite el envío de credenciales (cookies, headers de autorización)
+        configuration.setAllowCredentials(true);
+        
+        // Expone estos headers en la respuesta
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        
+        // Tiempo de caché de la configuración CORS (en segundos)
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     // Configura las reglas de seguridad para las diferentes rutas de la API
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -94,6 +128,7 @@ public class SecurityConfig {
         // return http.build();
 
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas que no requieren autenticación
