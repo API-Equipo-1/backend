@@ -1,5 +1,7 @@
 package com.api.e_commerce.service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,6 +13,7 @@ import com.api.e_commerce.dto.RegisterRequestDTO;
 import com.api.e_commerce.model.Role;
 import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.UsuarioRepository;
+import com.api.e_commerce.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +25,7 @@ public class AuthenticationService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
 
     public String register(RegisterRequestDTO request) {
 
@@ -83,6 +87,12 @@ public class AuthenticationService {
                         //para verificar si esta ok la pass se utiliza passwordEncoder, encripta la pass y la compara con la pass encriptada de la db
                         request.getPassword()));
 
-        return "Login successful";
+        //Generacion de token
+        Usuario user = usuarioRepository.findByEmail(request.getEmail()).orElseThrow();
+        Set<String> roles = user.getAuthorities().stream()
+            .map(grantedAuthority -> grantedAuthority.getAuthority())
+            .collect(Collectors.toSet());
+
+        return jwtUtil.generateToken(user.getEmail(), roles);
     }
 }
