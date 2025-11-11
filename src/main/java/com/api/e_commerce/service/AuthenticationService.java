@@ -8,8 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.api.e_commerce.dto.AuthenticationResponseDTO;
 import com.api.e_commerce.dto.LoginRequestDTO;
 import com.api.e_commerce.dto.RegisterRequestDTO;
+import com.api.e_commerce.mapper.UsuarioMapper;
 import com.api.e_commerce.model.Role;
 import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.UsuarioRepository;
@@ -21,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 @RequiredArgsConstructor
 public class AuthenticationService {
-
+    private final UsuarioMapper usuarioMapper;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -76,7 +78,7 @@ public class AuthenticationService {
      *
      *
      */
-    public String authenticate(LoginRequestDTO request) {
+    public AuthenticationResponseDTO authenticate(LoginRequestDTO request) {
         //verifica que exista el email y que la pass sea correcta
         // busca el email en la db
         // pass la encripta y la compara con la pass de la db
@@ -93,6 +95,12 @@ public class AuthenticationService {
             .map(grantedAuthority -> grantedAuthority.getAuthority())
             .collect(Collectors.toSet());
 
-        return jwtUtil.generateToken(user.getEmail(), roles);
+        String token = jwtUtil.generateToken(user.getEmail(), roles);
+        
+        return AuthenticationResponseDTO.builder()
+                .token(token)
+                .usuario(usuarioMapper.toDTO(user))
+                .build();
+
     }
 }

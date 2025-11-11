@@ -1,5 +1,6 @@
 package com.api.e_commerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -17,7 +18,7 @@ public class Categoria {
     @Column(nullable = false)    
     private String nombre;
 
-    
+    @JsonIgnore
     @ManyToMany(mappedBy = "categorias")
     private List<Producto> productos = new ArrayList<>();
 }

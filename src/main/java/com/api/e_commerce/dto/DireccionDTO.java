@@ -1,6 +1,5 @@
-package com.api.e_commerce.model;
+package com.api.e_commerce.dto;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,21 +9,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "direcciones")
-public class Direccion {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+public class DireccionDTO {
     private String calle;
     private String numero;
     private String localidad;
     private String provincia;
     private String pais;
     private String codigoPostal;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
 }

@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.api.e_commerce.service.ProductoService;
-import com.api.e_commerce.dto.ProductoDTO;
 import com.api.e_commerce.dto.ProductoUpdateDTO;
 
 @RestController
@@ -23,6 +22,12 @@ public class ProductoController {
     @GetMapping
     public List<ProductoDTO> getAllProductos() {
         return productoService.getAllProductos();
+    }
+    
+    //https://localhost:8080/api/productos/usuario/3 con metodo get http
+    @GetMapping("/usuario/{usuarioId}")
+    public List<ProductoDTO> getProductosByUsuarioId(@PathVariable Long usuarioId) {
+        return productoService.getProductosByUsuarioId(usuarioId);
     }
 
     // https://localhost:8080/api/productos/3 con metodo get http
@@ -47,8 +52,31 @@ public class ProductoController {
 
     //https://localhost:8080/api/productos/1 con metodo delete http
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProducto(@PathVariable Long id) {
-        productoService.deleteProducto(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProducto(@PathVariable Long id) {
+        try {
+            productoService.deleteProducto(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+    
+    // Clase interna para respuestas de error
+    private static class ErrorResponse {
+        private String message;
+        
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }

@@ -18,6 +18,8 @@ public class ProductoDTO {
     private String descripcion;
     private Double precio;
     private Integer stock;
+    private String imagen;
+    private Long usuarioId;
     private List<Categoria> categorias;
 
 }

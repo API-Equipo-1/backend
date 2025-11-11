@@ -3,9 +3,12 @@ package com.api.e_commerce.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.api.e_commerce.dto.PedidoRequestDTO;
+import com.api.e_commerce.dto.PedidoResponseDTO;
 import com.api.e_commerce.model.Pedido;
 import com.api.e_commerce.service.PedidoService;
  
@@ -21,7 +24,7 @@ public class PedidoController {
         return pedidoService.getAllPedidos();
     }
 
-     @GetMapping("/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Pedido> getPedidoById(@PathVariable Long id) {
         Pedido pedido = pedidoService.getPedidoById(id);
         return ResponseEntity.ok(pedido);
@@ -31,7 +34,12 @@ public class PedidoController {
     public Pedido createPedido(@RequestBody Pedido pedido) {
         return pedidoService.createPedido(pedido);
     }
-
+    
+    @PostMapping("/checkout")
+    public ResponseEntity<PedidoResponseDTO> createPedidoFromCheckout(@RequestBody PedidoRequestDTO pedidoRequest) {
+        PedidoResponseDTO pedidoCreado = pedidoService.createPedidoFromRequest(pedidoRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(pedidoCreado);
+    }
 
     @DeleteMapping("/{id}")
     public void deletePedido(@PathVariable Long id) {

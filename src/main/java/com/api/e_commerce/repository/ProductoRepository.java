@@ -18,6 +18,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     // Puedes agregar consultas personalizadas si es necesario
     // solo con nombrar el método siguiendo las convenciones de Spring Data JPA
+    
+    List<Producto> findByUsuarioId(Long usuarioId);
     // jpa genera el sql correcto
     List<Producto> findByNombreContaining(String nombre);
     //crear una consulta sql "Select * from productos where nombre like %nombre%"
