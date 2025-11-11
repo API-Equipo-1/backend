@@ -63,6 +63,31 @@ public class ProductoService {
             producto.setUsuario(usuario);
         }
         
+        // Manejar categorías al crear producto
+        if (productoDTO.getCategorias() != null && !productoDTO.getCategorias().isEmpty()) {
+            List<Categoria> categoriasGestionadas = productoDTO.getCategorias().stream()
+                .map(categoria -> {
+                    // Si la categoría tiene ID, buscarla
+                    if (categoria.getId() != null) {
+                        return categoriaRepository.findById(categoria.getId())
+                            .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + categoria.getId()));
+                    }
+                    // Si no tiene ID, buscar por nombre o crear nueva
+                    else if (categoria.getNombre() != null) {
+                        return categoriaRepository.findByNombre(categoria.getNombre())
+                            .orElseGet(() -> {
+                                Categoria nuevaCategoria = new Categoria();
+                                nuevaCategoria.setNombre(categoria.getNombre());
+                                return categoriaRepository.save(nuevaCategoria);
+                            });
+                    }
+                    throw new RuntimeException("Categoría inválida: debe tener ID o nombre");
+                })
+                .collect(Collectors.toList());
+            
+            producto.setCategorias(categoriasGestionadas);
+        }
+        
         Producto savedProduct = productoRepository.save(producto);
         return productoMapper.toDTO(savedProduct);
     }
