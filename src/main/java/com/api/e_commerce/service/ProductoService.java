@@ -9,6 +9,7 @@ import com.api.e_commerce.mapper.ProductoMapper;
 import com.api.e_commerce.model.Categoria;
 import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.CategoriaRepository;
+import com.api.e_commerce.repository.DetallePedidoRepository;
 import com.api.e_commerce.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,9 @@ public class ProductoService {
     
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private DetallePedidoRepository detallePedidoRepository;
 
     private final ProductoMapper productoMapper;
 
@@ -95,6 +99,17 @@ public class ProductoService {
     public void deleteProducto(Long id) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
+        
+        // Verificar si el producto está en algún pedido
+        if (detallePedidoRepository.existsByProductoId(id)) {
+            throw new RuntimeException("No se puede eliminar el producto porque está asociado a uno o más pedidos. Si no posee stock puede modificarlo");
+        }
+        
+        // Limpiar las relaciones many-to-many con categorías
+        producto.getCategorias().clear();
+        productoRepository.save(producto);
+        
+        // Ahora sí eliminar el producto
         productoRepository.delete(producto);
     }
 

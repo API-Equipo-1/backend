@@ -52,8 +52,31 @@ public class ProductoController {
 
     //https://localhost:8080/api/productos/1 con metodo delete http
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProducto(@PathVariable Long id) {
-        productoService.deleteProducto(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProducto(@PathVariable Long id) {
+        try {
+            productoService.deleteProducto(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+    
+    // Clase interna para respuestas de error
+    private static class ErrorResponse {
+        private String message;
+        
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
+        
+        public String getMessage() {
+            return message;
+        }
+        
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 }
