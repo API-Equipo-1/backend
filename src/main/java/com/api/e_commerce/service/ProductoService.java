@@ -1,9 +1,13 @@
 package com.api.e_commerce.service;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import com.api.e_commerce.dto.ProductoDTO;
 import com.api.e_commerce.mapper.ProductoMapper;
+import com.api.e_commerce.model.Categoria;
+import com.api.e_commerce.repository.CategoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +22,9 @@ public class ProductoService {
     
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
     private final ProductoMapper productoMapper;
 
@@ -53,8 +60,35 @@ public class ProductoService {
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado con id: " + id));
 
         if (updateDTO.getNombre() != null) producto.setNombre(updateDTO.getNombre());
+        if (updateDTO.getDescripcion() != null) producto.setDescripcion(updateDTO.getDescripcion());
         if (updateDTO.getPrecio() != null) producto.setPrecio(updateDTO.getPrecio());
         if (updateDTO.getStock() != null) producto.setStock(updateDTO.getStock());
+        if (updateDTO.getImagen() != null) producto.setImagen(updateDTO.getImagen());
+        
+        // Manejar categorías
+        if (updateDTO.getCategorias() != null && !updateDTO.getCategorias().isEmpty()) {
+            List<Categoria> categoriasGestionadas = updateDTO.getCategorias().stream()
+                .map(categoria -> {
+                    // Si la categoría tiene ID, buscarla
+                    if (categoria.getId() != null) {
+                        return categoriaRepository.findById(categoria.getId())
+                            .orElseThrow(() -> new RuntimeException("Categoría no encontrada con id: " + categoria.getId()));
+                    }
+                    // Si no tiene ID, buscar por nombre o crear nueva
+                    else if (categoria.getNombre() != null) {
+                        return categoriaRepository.findByNombre(categoria.getNombre())
+                            .orElseGet(() -> {
+                                Categoria nuevaCategoria = new Categoria();
+                                nuevaCategoria.setNombre(categoria.getNombre());
+                                return categoriaRepository.save(nuevaCategoria);
+                            });
+                    }
+                    throw new RuntimeException("Categoría inválida: debe tener ID o nombre");
+                })
+                .collect(Collectors.toList());
+            
+            producto.setCategorias(categoriasGestionadas);
+        }
 
         Producto savedProduct = productoRepository.save(producto);
         return productoMapper.toDto(savedProduct);

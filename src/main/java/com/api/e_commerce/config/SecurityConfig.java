@@ -93,7 +93,7 @@ public class SecurityConfig {
         
         // Permite solicitudes desde estos orígenes (frontend)
         // En producción, reemplazar "*" con la URL específica del frontend
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4200", "http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4200", "http://localhost:5173", "http://localhost:80", "http://localhost"));
         
         // Permite todos los métodos HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

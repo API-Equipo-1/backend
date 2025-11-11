@@ -23,7 +23,7 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
-    // private String imagenUrl;
+    private String imagen;
     
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

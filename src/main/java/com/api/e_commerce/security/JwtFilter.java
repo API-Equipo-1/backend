@@ -62,8 +62,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private boolean isPublicPath(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
         
-        // Solo la ruta de autenticación es pública
-        return path.startsWith("/api/auth/");
+        // Rutas públicas:
+        // - Todas las rutas de autenticación
+        // - GET a productos (consulta pública)
+        return path.startsWith("/api/auth/") || 
+               (path.startsWith("/api/productos") && method.equals("GET"));
     }
 }
