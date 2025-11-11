@@ -23,6 +23,12 @@ public class ProductoController {
     public List<ProductoDTO> getAllProductos() {
         return productoService.getAllProductos();
     }
+    
+    //https://localhost:8080/api/productos/usuario/3 con metodo get http
+    @GetMapping("/usuario/{usuarioId}")
+    public List<ProductoDTO> getProductosByUsuarioId(@PathVariable Long usuarioId) {
+        return productoService.getProductosByUsuarioId(usuarioId);
+    }
 
     // https://localhost:8080/api/productos/3 con metodo get http
     @GetMapping("/{id}")

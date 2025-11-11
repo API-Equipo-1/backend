@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import com.api.e_commerce.dto.ProductoDTO;
 import com.api.e_commerce.mapper.ProductoMapper;
 import com.api.e_commerce.model.Categoria;
+import com.api.e_commerce.model.Usuario;
 import com.api.e_commerce.repository.CategoriaRepository;
+import com.api.e_commerce.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,9 @@ public class ProductoService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+    
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     private final ProductoMapper productoMapper;
 
@@ -36,6 +41,11 @@ public class ProductoService {
         List<Producto> productos = productoRepository.findAll();
         return productoMapper.toDTOList(productos);
     }
+    
+    public List<ProductoDTO> getProductosByUsuarioId(Long usuarioId) {
+        List<Producto> productos = productoRepository.findByUsuarioId(usuarioId);
+        return productoMapper.toDTOList(productos);
+    }
 
     public ProductoDTO getProductoById(Long id) {
         Producto producto = productoRepository.findById(id)
@@ -45,6 +55,14 @@ public class ProductoService {
 
     public ProductoDTO addProducto(ProductoDTO productoDTO){
         Producto producto = productoMapper.toEntity(productoDTO);
+        
+        // Si viene usuarioId, buscar y asignar el usuario
+        if (productoDTO.getUsuarioId() != null) {
+            Usuario usuario = usuarioRepository.findById(productoDTO.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + productoDTO.getUsuarioId()));
+            producto.setUsuario(usuario);
+        }
+        
         Producto savedProduct = productoRepository.save(producto);
         return productoMapper.toDTO(savedProduct);
     }

@@ -25,6 +25,10 @@ public class Producto {
 
     private String imagen;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+    
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "productos_categorias",
